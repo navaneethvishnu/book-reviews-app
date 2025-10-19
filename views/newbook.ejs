@@ -1,0 +1,85 @@
+<%- include("header.ejs") %>
+<div class="bg-warning">
+  <div class="container">
+    <div class="row">
+      <div
+        class="options p-4 d-flex justify-content-between align-items-center col-sm-12 col-md-12 col-lg-12"
+      >
+        <div class="home">
+          <a class="link-underline link-underline-opacity-0 text-dark" href="/"
+            >HOME</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container d-flex justify-content-center">
+  <div
+    class="row g-2 d-flex flex-column py-4 col-11 col-sm-11 col-md-10 col-lg-8"
+  >
+    <div class="top d-flex flex-column align-items-center">
+      <h2><%= title %></h2>
+      <p><%= authorName %></p>
+      <img class="col-4" src="<%= imageURL %>" />
+    </div>
+    <!--  -->
+    <form
+      class="d-flex flex-column align-items-center"
+      action="/books"
+      method="POST"
+    >
+      <div class="center col-12 d-flex justify-content-between">
+        <div class="entry col-12">
+          <!-- Short Summary with 750 char limit -->
+          <div class="my-4">
+            <textarea
+              class="form-control"
+              name="shortSummary"
+              placeholder="Short Summary (max 750 characters)"
+              maxlength="750"
+              required
+            ></textarea>
+          </div>
+
+          <!-- Long Summary with no limit -->
+          <div class="mb-4">
+            <textarea
+              class="form-control"
+              name="longSummary"
+              placeholder="Long Summary"
+              rows="6"
+              required
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rating input 1-5 -->
+      <div class="bottom col-12 d-flex flex-column mb-4">
+        <label for="rating">Rating (1 to 5)</label>
+        <input
+          type="number"
+          name="rating"
+          id="rating"
+          min="1"
+          max="5"
+          required
+        />
+      </div>
+
+      <!-- Hidden values -->
+      <input type="hidden" name="bookName" value="<%= title %>" />
+      <input type="hidden" name="authorName" value="<%= authorName %>" />
+      <input type="hidden" name="imageURL" value="<%= imageURL %>" />
+
+      <!-- Submit button -->
+      <button class="custom-btn mt-4 btn btn-warning col-5" type="submit">
+        Submit
+      </button>
+    </form>
+
+    <!--  -->
+  </div>
+</div>
+<%- include("footer.ejs") %>

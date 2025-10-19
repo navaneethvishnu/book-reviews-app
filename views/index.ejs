@@ -1,0 +1,80 @@
+<%- include("header.ejs") %>
+<div class="bg-warning mb-5">
+  <div class="container">
+    <div class="row">
+      <div
+        class="options p-4 d-flex justify-content-between align-items-center col-sm-12 col-md-12 col-lg-12"
+      >
+        <div class="home">
+          <a class="link-underline link-underline-opacity-0 text-dark" href="/"
+            >HOME</a
+          >
+        </div>
+        <div class="dropdown">
+          <button
+            class="btn btn-secondary dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            FILTER
+          </button>
+          <ul class="dropdown-menu dropdown-menu-dark">
+            <li>
+              <a class="dropdown-item" href="/books?filter=date">DATE</a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/books?filter=rating">RATING</a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/books?filter=name">NAME</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row g-4">
+    <% if(book.length>0){ %> <% book.forEach((item)=>{ %>
+    <div class="review col-sm-12 col-md-12 col-lg-6">
+      <div class="p-3 border rounded shadow-sm">
+        <h2 class="px-2"><%= item.title %></h2>
+        <div class="image-sumry p-2 clearfix">
+          <img
+            src="<%= item.imgurl %>"
+            alt=""
+            class="rounded float-start me-3 mb-2"
+          />
+          <p><%= item.description %></p>
+        </div>
+        <div class="rating px-2">
+          <p class="mb-0">
+            <% const stars = item.rating; %> <% const unblow = 5-stars; %>
+            Rating: <% for (let i=0; i < stars; i++) {%>
+            <i class="bi bi-star-fill text-warning"></i>
+            <% } %> <% for (let i=0; i < unblow; i++) {%>
+            <i class="bi bi-star text-warning"></i>
+            <% } %>
+          </p>
+        </div>
+        <div class="details p-2 pb-0 d-flex justify-content-between">
+          <div class="book-detail">
+            <p class="mb-0">Author of book: <%= item.author %></p>
+            <p class="mb-0">Posted on: June 1, 2010</p>
+          </div>
+          <div class="more d-flex align-items-end">
+            <form action="/book/<%= item.id %>" method="GET"></form>
+            <button type="submit" class="btn text-primary mb-0 p-0">
+              read more
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <%}) %> <% } %>
+  </div>
+</div>
+<%- include("footer.ejs") %>

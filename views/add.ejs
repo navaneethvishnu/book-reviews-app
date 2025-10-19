@@ -1,0 +1,47 @@
+<%- include("header.ejs") %>
+<div class="bg-warning">
+  <div class="container">
+    <div class="row">
+      <div
+        class="options p-4 d-flex justify-content-between align-items-center col-sm-12 col-md-12 col-lg-12"
+      >
+        <div class="home">
+          <a class="link-underline link-underline-opacity-0 text-dark" href="/"
+            >HOME</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div
+    class="row d-flex justify-content-center align-items-center"
+    style="height: calc(100vh - 4rem)"
+  >
+    <div
+      class="box d-flex flex-column align-items-center border rounded-4 shadow p-4 col-11 col-sm-11 col-md-10 col-lg-8"
+    >
+      <h1>ADD NEW BOOK REVIEW</h1>
+      <form
+        class="d-flex flex-column align-items-center col-12"
+        action="/add"
+        method="POST"
+      >
+        <input
+          class="col-8 text-center"
+          type="text"
+          id="name"
+          name="name"
+          placeholder="Name of book"
+          required
+        />
+        <button class="custom-btn mt-4 btn btn-warning col-6" type="submit">
+          Submit
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+<%- include("footer.ejs") %>
