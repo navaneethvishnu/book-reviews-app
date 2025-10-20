@@ -13,35 +13,50 @@ const db = new pg.Client({
   user: "postgres",
   host: "localhost",
   database: "bookreview",
-  password: 1328,
+  password: "1328",
   port: 5432,
 });
 db.connect();
 
-const book = [
-  {
-    id: 12,
-    title: "The Particular Sadness of Lemon Cake",
-    description: `The novel follows Rose Edelstein, a young girl who, on her ninth
-                birthday, discovers she has a strange gift — or curse. When she
-                bites into her mothers homemade lemon-chocolate cake, she
-                tastes not just the ingredients but also her mothers feelings
-                of sadness and emptiness. As Rose grows older, her ability
-                deepens; she can taste emotions and secrets in any food prepared
-                by others. This talent exposes the hidden emotional truths of
-                her family — a mother struggling with loneliness, a brother
-                withdrawing from the world, and a father who seems emotionally
-                absent. Through magical realism, the novel explores family
-                dynamics, emotional isolation, and the burden of empathy, all
-                while Rose searches for connection and understanding.`,
-    author: "Aimee Bender",
-    imgurl: "https://covers.openlibrary.org/b/isbn/9780385533225-M.jpg",
-    rating: 3,
-  },
-];
-// home page
-app.get("/", (req, res) => {
-  res.render("index.ejs", { book: book });
+async function reviewData() {
+  const result = await db.query(
+    "SELECT bd.id, bd.book_title, bd.author_name, bd.rating, TO_CHAR(bd.posted_day, 'Month DD, YYYY') AS posted_day, br.book_image_url, br.short_summary FROM book_details AS bd JOIN book_review AS br ON bd.id=br.review_id"
+  );
+  return result.rows;
+}
+async function fullReview(id) {
+  const result = await db.query(
+    "SELECT bd.id, bd.book_title, bd.author_name, bd.rating, TO_CHAR(bd.posted_day, 'Month DD, YYYY') AS posted_day, br.book_image_url, br.long_summary FROM book_details AS bd JOIN book_review AS br ON bd.id=br.review_id WHERE bd.id=$1",
+    [id]
+  );
+  return result.rows;
+}
+async function filter(filter) {
+  if (filter == "date") {
+    const result = await db.query(
+      "SELECT bd.id, bd.book_title, bd.author_name, bd.rating, TO_CHAR(bd.posted_day, 'Month DD, YYYY') AS posted_day, br.book_image_url, br.short_summary FROM book_details AS bd JOIN book_review AS br ON bd.id=br.review_id ORDER BY bd.posted_day DESC"
+    );
+    return result.rows;
+  } else if (filter == "rating") {
+    const result = await db.query(
+      "SELECT bd.id, bd.book_title, bd.author_name, bd.rating, TO_CHAR(bd.posted_day, 'Month DD, YYYY') AS posted_day, br.book_image_url, br.short_summary FROM book_details AS bd JOIN book_review AS br ON bd.id=br.review_id ORDER BY bd.rating DESC"
+    );
+    return result.rows;
+  } else if (filter == "name") {
+    const result = await db.query(
+      "SELECT bd.id, bd.book_title, bd.author_name, bd.rating, TO_CHAR(bd.posted_day, 'Month DD, YYYY') AS posted_day, br.book_image_url, br.short_summary FROM book_details AS bd JOIN book_review AS br ON bd.id=br.review_id ORDER BY bd.book_title ASC"
+    );
+    return result.rows;
+  }
+}
+// home page with all book reviews
+app.get("/", async (req, res) => {
+  try {
+    const bookDetails = await reviewData();
+    res.render("index.ejs", { book: bookDetails });
+  } catch (err) {
+    console.log("not getting data from DB=>", err);
+  }
 });
 // form for enter the name of book to add
 app.get("/add", (req, res) => {
@@ -54,6 +69,9 @@ app.post("/add", async (req, res) => {
     const response = await axios.get(
       `https://openlibrary.org/search.json?q=${encodeURIComponent(bookName)}`
     );
+    if (!response.data.docs.length) {
+      return res.redirect("/add");
+    }
     const title = response.data.docs[0].title;
     const authorName = response.data.docs[0].author_name[0];
     const cover_i = response.data.docs[0].cover_i;
@@ -67,7 +85,7 @@ app.post("/add", async (req, res) => {
     res.redirect("/");
   }
 });
-
+// full data of new book review
 app.post("/books", async (req, res) => {
   const bookName = req.body.bookName;
   const imageURL = req.body.imageURL;
@@ -75,27 +93,37 @@ app.post("/books", async (req, res) => {
   const shortSummary = req.body.shortSummary;
   const rating = req.body.rating;
   const longSummary = req.body.longSummary;
-  // try {
-  //   await db.query(
-  //     "INSERT INTO book_details (book_title,author_name,rating) VALUES ($1,$2,$3)",
-  //     [bookName, authorName, rating]
-  //   );
-  //   await db.query(
-  //     "INSERT INTO book_review (book_image_url,short_summary,long_summary) VALUES ($1,$2,$3)",
-  //     [imageURL, shortSummary, longSummary]
-  //   );
-  // } catch (err) {
-  //   console.log(err);
-  // }
+  try {
+    const result = await db.query(
+      "INSERT INTO book_details (book_title,author_name,rating) VALUES ($1,$2,$3) RETURNING id",
+      [bookName, authorName, rating]
+    );
+    const reviewId = result.rows[0].id;
+    await db.query(
+      "INSERT INTO book_review (review_id,book_image_url,short_summary,long_summary) VALUES ($1,$2,$3,$4)",
+      [reviewId, imageURL, shortSummary, longSummary]
+    );
+    res.redirect(`/books/${reviewId}`);
+  } catch (err) {
+    console.log(err);
+    res.redirect("/");
+  }
+});
 
-  console.log(
-    bookName,
-    imageURL,
-    authorName,
-    shortSummary,
-    rating,
-    longSummary
-  );
+app.get("/books/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const bookReview = await fullReview(id);
+    res.render("fullsizereview.ejs", { bookReview });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.get("/books", async (req, res) => {
+  const value = req.query.filter;
+  const result = await filter(value);
+  res.render("index.ejs", { book: result });
 });
 
 app.listen(port, () => {

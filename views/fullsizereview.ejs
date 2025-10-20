@@ -1,0 +1,54 @@
+<%- include("header.ejs") %>
+<div class="bg-warning">
+  <div class="container">
+    <div class="row">
+      <div
+        class="options p-4 d-flex justify-content-between align-items-center col-sm-12 col-md-12 col-lg-12"
+      >
+        <div class="home">
+          <a class="link-underline link-underline-opacity-0 text-dark" href="/"
+            >HOME</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row g-4">
+    <% if(bookReview.length>0){ %>
+    <div class="review col-sm-12 col-md-12 col-lg-6">
+      <div class="p-3 border rounded shadow-sm">
+        <h2 class="px-2"><%= bookReview[0].book_title %></h2>
+        <div class="image-sumry p-2 clearfix">
+          <img
+            src="<%= bookReview[0].book_image_url %>"
+            alt=""
+            class="rounded float-start me-3 mb-2"
+          />
+          <p><%= bookReview[0].long_summary %></p>
+        </div>
+        <div class="rating px-2">
+          <p class="mb-0">
+            <% const stars = bookReview[0].rating; %> <% const unblow = 5-stars;
+            %> Rating: <% for (let i=0; i < stars; i++) {%>
+            <i class="bi bi-star-fill text-warning"></i>
+            <% } %> <% for (let i=0; i < unblow; i++) {%>
+            <i class="bi bi-star text-warning"></i>
+            <% } %>
+          </p>
+        </div>
+        <div class="details p-2 pb-0 d-flex justify-content-between">
+          <div class="book-detail">
+            <p class="mb-0">Author of book: <%= bookReview[0].author_name %></p>
+            <p class="mb-0">Posted on: <%= bookReview[0].posted_day %></p>
+          </div>
+          <div class="more d-flex align-items-end"></div>
+        </div>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</div>
+<%- include("footer.ejs") %>

@@ -41,14 +41,14 @@
     <% if(book.length>0){ %> <% book.forEach((item)=>{ %>
     <div class="review col-sm-12 col-md-12 col-lg-6">
       <div class="p-3 border rounded shadow-sm">
-        <h2 class="px-2"><%= item.title %></h2>
+        <h2 class="px-2"><%= item.book_title %></h2>
         <div class="image-sumry p-2 clearfix">
           <img
-            src="<%= item.imgurl %>"
+            src="<%= item.book_image_url %>"
             alt=""
             class="rounded float-start me-3 mb-2"
           />
-          <p><%= item.description %></p>
+          <p><%= item.short_summary %></p>
         </div>
         <div class="rating px-2">
           <p class="mb-0">
@@ -62,14 +62,15 @@
         </div>
         <div class="details p-2 pb-0 d-flex justify-content-between">
           <div class="book-detail">
-            <p class="mb-0">Author of book: <%= item.author %></p>
-            <p class="mb-0">Posted on: June 1, 2010</p>
+            <p class="mb-0">Author of book: <%= item.author_name %></p>
+            <p class="mb-0">Posted on: <%= item.posted_day %></p>
           </div>
           <div class="more d-flex align-items-end">
-            <form action="/book/<%= item.id %>" method="GET"></form>
-            <button type="submit" class="btn text-primary mb-0 p-0">
-              read more
-            </button>
+            <form action="/books/<%= item.id %>" method="GET">
+              <button type="submit" class="btn text-primary mb-0 p-0">
+                read more
+              </button>
+            </form>
           </div>
         </div>
       </div>
