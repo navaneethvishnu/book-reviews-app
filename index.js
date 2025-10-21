@@ -26,7 +26,7 @@ async function reviewData() {
 }
 async function fullReview(id) {
   const result = await db.query(
-    "SELECT bd.id, bd.book_title, bd.author_name, bd.rating, TO_CHAR(bd.posted_day, 'Month DD, YYYY') AS posted_day, br.book_image_url, br.long_summary FROM book_details AS bd JOIN book_review AS br ON bd.id=br.review_id WHERE bd.id=$1",
+    "SELECT bd.id, bd.book_title, bd.author_name, bd.rating, TO_CHAR(bd.posted_day, 'Month DD, YYYY') AS posted_day, br.book_image_url, br.short_summary, br.long_summary FROM book_details AS bd JOIN book_review AS br ON bd.id=br.review_id WHERE bd.id=$1",
     [id]
   );
   return result.rows;
@@ -124,6 +124,47 @@ app.get("/books", async (req, res) => {
   const value = req.query.filter;
   const result = await filter(value);
   res.render("index.ejs", { book: result });
+});
+//admin section
+app.get("/admin", async (req, res) => {
+  const value = req.query.filter;
+  if (!value) {
+    try {
+      const bookDetails = await reviewData();
+      res.render("admin.ejs", { book: bookDetails });
+    } catch (err) {
+      console.log("not getting data from DB=>", err);
+    }
+  } else {
+    const result = await filter(value);
+    res.render("admin.ejs", { book: result });
+  }
+});
+
+app.get("/edit/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const bookReview = await fullReview(id);
+    res.render("editing.ejs", { data: bookReview });
+  } catch (err) {
+    console.log(err);
+  }
+});
+app.post("/edit", async (req, res) => {
+  const data = req.body;
+  try {
+    await db.query("UPDATE book_details SET rating = $1 WHERE id = $2", [
+      data.rating,
+      data.id,
+    ]);
+    await db.query(
+      "UPDATE book_review SET short_summary=$1,long_summary=$2 WHERE review_id = $3",
+      [data.shortSummary, data.longSummary, data.id]
+    );
+    res.redirect(`/books/${data.id}`);
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 app.listen(port, () => {

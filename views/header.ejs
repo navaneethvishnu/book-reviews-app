@@ -14,6 +14,10 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+    />
     <style>
       .custom-btn {
         transition: background-color 0.4s ease, color 0.4s ease;
@@ -23,7 +27,14 @@
         background-color: #ff9800; /* a slightly darker/or different shade */
         color: #fff; /* text color on hover */
       }
+
+      .hovers:hover {
+        filter: brightness(120%);
+        box-shadow: 0 0 20px rgba(1, 0, 0, 0.5);
+        transform: scale(1.05);
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
     </style>
   </head>
-  <body></body>
-</html>
+  <body>
