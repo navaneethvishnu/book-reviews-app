@@ -166,6 +166,24 @@ app.post("/edit", async (req, res) => {
     console.log(error);
   }
 });
+app.get("/delete/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const bookReview = await fullReview(id);
+    res.render("deleting.ejs", { book: bookReview });
+  } catch (err) {
+    console.log(err);
+  }
+});
+app.post("/delete/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    await db.query("DELETE FROM book_details WHERE id = $1", [id]);
+    res.redirect("/admin");
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 app.listen(port, () => {
   console.log(`server running on port no: ${port}`);

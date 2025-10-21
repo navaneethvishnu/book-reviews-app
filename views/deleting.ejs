@@ -1,0 +1,36 @@
+<%- include("header.ejs") %>
+<div class="bg-warning">
+  <div class="container">
+    <div class="row">
+      <div
+        class="options p-4 d-flex justify-content-between align-items-center col-sm-12 col-md-12 col-lg-12"
+      >
+        <div class="home">
+          <a class="link-underline link-underline-opacity-0 text-dark" href="/"
+            >HOME</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="container d-flex align-items-center justify-content-center"
+  style="height: calc(100vh - 4rem)"
+>
+  <div class="row text-center col-11 col-sm-11 col-md-10 col-lg-8 p-4">
+    <h2>Are you sure?</h2>
+    <h3><%= book[0].book_title %></h3>
+    <p>This action connot be undone. Do you really want to delete this book?</p>
+    <div class="button gap-2 d-flex justify-content-center">
+      <form action="/delete/<%= book[0].id %>" method="POST">
+        <button type="submit" class="btn btn-danger px-4">Yes, Delete</button>
+      </form>
+      <a href="/admin" class="btn btn-secondary d-flex align-items-center px-4"
+        >Cancel</a
+      >
+    </div>
+  </div>
+</div>
+<%- include("footer.ejs") %>
