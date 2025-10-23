@@ -2,12 +2,27 @@ import express from "express";
 import bodyParser from "body-parser";
 import pg from "pg";
 import axios from "axios";
+import session from "express-session";
+import passport from "passport";
+import { Strategy } from "passport-local";
+import bcrypt from "bcrypt";
 
 const app = express();
 const port = 3000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+
+app.use(
+  session({
+    secret: "TOPSECRETWORD",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 const db = new pg.Client({
   user: "postgres",
@@ -127,17 +142,21 @@ app.get("/books", async (req, res) => {
 });
 //admin section
 app.get("/admin", async (req, res) => {
-  const value = req.query.filter;
-  if (!value) {
-    try {
-      const bookDetails = await reviewData();
-      res.render("admin.ejs", { book: bookDetails });
-    } catch (err) {
-      console.log("not getting data from DB=>", err);
+  if (req.isAuthenticated()) {
+    const value = req.query.filter;
+    if (!value) {
+      try {
+        const bookDetails = await reviewData();
+        res.render("admin.ejs", { book: bookDetails });
+      } catch (err) {
+        console.log("not getting data from DB=>", err);
+      }
+    } else {
+      const result = await filter(value);
+      res.render("admin.ejs", { book: result });
     }
   } else {
-    const result = await filter(value);
-    res.render("admin.ejs", { book: result });
+    res.redirect("/login");
   }
 });
 
@@ -183,6 +202,88 @@ app.post("/delete/:id", async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+});
+
+app.get("/signin", (req, res) => {
+  res.render("signin.ejs");
+});
+
+app.get("/login", (req, res) => {
+  res.render("login.ejs");
+});
+
+app.post("/signin", async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const result = await db.query("SELECT * FROM users WHERE email = $1", [
+      username,
+    ]);
+    if (result.rows.length == 0) {
+      bcrypt.hash(password, 10, async (err, hash) => {
+        if (err) {
+          console.log(err);
+        } else {
+          const result = await db.query(
+            "INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *",
+            [username, hash]
+          );
+          const user = result.rows[0];
+          req.login(user, (err) => {
+            if (err) return res.redirect("/login");
+            res.redirect("/admin");
+          });
+        }
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+app.post(
+  "/login",
+  passport.authenticate("local", {
+    successRedirect: "/admin",
+    failureRedirect: "/login",
+  })
+);
+
+passport.use(
+  new Strategy(async function verify(username, password, cb) {
+    try {
+      const result = await db.query("SELECT * FROM users WHERE email = $1", [
+        username,
+      ]);
+      if (result.rows.length > 0) {
+        const user = result.rows[0];
+        const hash = user.password;
+        await bcrypt.compare(password, hash, (err, value) => {
+          if (err) {
+            console.log(err);
+            return cb(err);
+          } else {
+            if (value) {
+              return cb(null, user);
+            } else {
+              return cb(null, false);
+            }
+          }
+        });
+      } else {
+        return cb("user not found");
+      }
+    } catch (error) {
+      console.log(err);
+    }
+  })
+);
+
+passport.serializeUser((user, cb) => {
+  cb(null, user);
+});
+
+passport.deserializeUser((user, cb) => {
+  cb(null, user);
 });
 
 app.listen(port, () => {
